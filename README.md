@@ -12,7 +12,7 @@
 RideTech — это REST API сервис для организации поездок с поддержкой ролей (пассажир / водитель), управления машинами, заказами поездок и отзывами.
 Проект написан на Laravel 11 + Sanctum с архитектурой Controller → Service → Model.
 
-⚙️ Функционал
+ Функционал
 
   Регистрация и аутентификация (Laravel Sanctum)
 
@@ -136,18 +136,9 @@ curl -X POST http://localhost:8000/api/v1/reviews/2 \
 curl -X GET http://localhost:8000/api/v1/reviews/2 \
   -H "Authorization: Bearer 1|anyToken..."
 
-📂 Структура проекта
-app/
- ├── Http/
- │    ├── Controllers/Api/   # Контроллеры API
- │    └── Middleware/        # Middleware (RoleMiddleware)
- ├── Models/                 # Eloquent модели
- ├── Services/               # TripService, CarService, ReviewService
-routes/
- ├── api.php                 # API маршруты
- └── web.php                 # Web маршруты
 
-✅ Полезные команды
+
+Полезные команды
 php artisan migrate:fresh --seed   # пересоздать БД с данными
 php artisan cache:clear            # очистить кэш
 php artisan config:clear           # сбросить конфигурацию
