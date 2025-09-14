@@ -7,54 +7,151 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+🚖 RideTech API
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+RideTech — это REST API сервис для организации поездок с поддержкой ролей (пассажир / водитель), управления машинами, заказами поездок и отзывами.
+Проект написан на Laravel 11 + Sanctum с архитектурой Controller → Service → Model.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+⚙️ Функционал
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+  Регистрация и аутентификация (Laravel Sanctum)
 
-## Learning Laravel
+  Роли пользователей: passenger и driver
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+  Управление машинами (только для водителей)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+  Управление поездками (создание, принятие, завершение)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+  Система отзывов о водителях
 
-## Laravel Sponsors
+  WebSockets (Broadcasting через Reverb)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+  Redis для кеша
 
-### Premium Partners
+ PostgreSQL для БД
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+  Установка и запуск
+1. Клонировать репозиторий
+git clone https://github.com/yourname/ridetech-api.git
+cd ridetech-api
 
-## Contributing
+2. Установить зависимости
+composer install
+npm install && npm run build
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. Скопировать .env и настроить
+cp .env.example .env
 
-## Code of Conduct
+4. Сгенерировать ключ приложения
+php artisan key:generate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5. Запустить миграции и сидеры
+php artisan migrate --seed
 
-## Security Vulnerabilities
+6. Запустить сервер
+php artisan serve
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+
+API доступно по адресу:
+
+http://localhost:8000/api/v1
+
+  Примеры API
+  Аутентификация
+Регистрация
+curl -X POST http://localhost:8000/api/v1/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name":"John Doe",
+    "phone":"+79998887766",
+    "password":"secret123",
+    "role":"passenger"
+  }'
+
+Логин
+curl -X POST http://localhost:8000/api/v1/login \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"+79998887766","password":"secret123"}'
+
+
+Ответ:
+
+{
+  "token": "1|abc123..."
+}
+
+Логаут
+curl -X POST http://localhost:8000/api/v1/logout \
+  -H "Authorization: Bearer 1|abc123..."
+
+  Trips (Поездки)
+Создать поездку (пассажир)
+curl -X POST http://localhost:8000/api/v1/trips \
+  -H "Authorization: Bearer 1|abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from":"Москва",
+    "to":"Санкт-Петербург",
+    "price":1500
+  }'
+
+Получить список поездок пользователя
+curl -X GET http://localhost:8000/api/v1/trips \
+  -H "Authorization: Bearer 1|abc123..."
+
+Принять поездку (водитель)
+curl -X POST http://localhost:8000/api/v1/trips/1/accept \
+  -H "Authorization: Bearer 1|driverToken..."
+
+ Cars (Машины — только для водителей)
+Добавить машину
+curl -X POST http://localhost:8000/api/v1/cars \
+  -H "Authorization: Bearer 1|driverToken..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "make":"Toyota",
+    "model":"Camry",
+    "plate":"A123BC77"
+  }'
+
+Список машин водителя
+curl -X GET http://localhost:8000/api/v1/cars \
+  -H "Authorization: Bearer 1|driverToken..."
+
+Удалить машину
+curl -X DELETE http://localhost:8000/api/v1/cars/1 \
+  -H "Authorization: Bearer 1|driverToken..."
+
+  Reviews (Отзывы)
+Оставить отзыв (пассажир → водитель)
+curl -X POST http://localhost:8000/api/v1/reviews/2 \
+  -H "Authorization: Bearer 1|passengerToken..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "rating":5,
+    "comment":"Отличная поездка, водитель вежливый!"
+  }'
+
+Получить отзывы о водителе
+curl -X GET http://localhost:8000/api/v1/reviews/2 \
+  -H "Authorization: Bearer 1|anyToken..."
+
+📂 Структура проекта
+app/
+ ├── Http/
+ │    ├── Controllers/Api/   # Контроллеры API
+ │    └── Middleware/        # Middleware (RoleMiddleware)
+ ├── Models/                 # Eloquent модели
+ ├── Services/               # TripService, CarService, ReviewService
+routes/
+ ├── api.php                 # API маршруты
+ └── web.php                 # Web маршруты
+
+✅ Полезные команды
+php artisan migrate:fresh --seed   # пересоздать БД с данными
+php artisan cache:clear            # очистить кэш
+php artisan config:clear           # сбросить конфигурацию
+php artisan route:list             # список маршрутов
 
 ## License
 

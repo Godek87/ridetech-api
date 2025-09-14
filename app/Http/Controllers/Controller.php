@@ -12,16 +12,30 @@ use Illuminate\Routing\Controller as BaseController;
 /**
  * Базовый контроллер приложения.
  *
- * Любой контроллер в приложении должен наследоваться от этого класса.
  * Предоставляет:
  * - Валидацию запросов
  * - Авторизацию
  * - Диспетчеризацию задач
  * - Middleware
  */
+
+/**
+ * @OA\Info(
+ *     version="1.0.0",
+ *     title="RideTech API",
+ *     description="API для приложения совместных поездок"
+ * )
+ * @OA\Server(url="http://localhost:8000/api/v1", description="Development server")
+ * @OA\SecurityScheme(
+ *     securityScheme="bearerAuth",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
+ */
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    // Здесь можно добавить общие методы для всех контроллеров, если нужно
+    // общие методы для всех контроллеров, если нужно
 }

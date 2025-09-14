@@ -32,6 +32,7 @@ class TripRepository implements TripRepositoryInterface
             return $query->paginate(10);
         });
     }
+
     public function getAvailableTrips(array $filters = []): Collection
     {
         $cacheKey = 'available_trips_' . md5(json_encode($filters));

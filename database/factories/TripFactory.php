@@ -13,14 +13,15 @@ final class TripFactory extends Factory
 
     public function definition(): array
     {
-        $passenger = User::factory()->create(['role' => 'passenger']);
+
+
         return [
-            'passenger_id' => $passenger->id,
+            //'passenger_id' => User::factory()->state(['role' => 'passenger']),
+            'driver_id' => null,
             'from_address' => $this->faker->address,
             'to_address' => $this->faker->address,
-            'preferences' => null,
-            'status' => Trip::STATUS_PENDING,
-            'price' => null,
+            'status' => 'pending',
+            'price' => $this->faker->randomFloat(2, 10, 100),
         ];
     }
 }

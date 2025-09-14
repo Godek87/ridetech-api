@@ -1,39 +1,55 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Domain\Review\Services;
 
 use App\Domain\Review\Entities\Review;
-use App\Domain\Review\Repositories\ReviewRepositoryInterface;
 use App\Domain\User\Entities\User;
 use Illuminate\Support\Collection;
 
 class ReviewService
 {
-    private ReviewRepositoryInterface $repository;
-
-    public function __construct(ReviewRepositoryInterface $repository)
+    /**
+     * Оставить отзыв водителю
+     */
+    public function createReview(int $userId, int $driverId, int $rating, ?string $comment): Review
     {
-        $this->repository = $repository;
-    }
+        $driver = User::findOrFail($driverId);
 
-    public function createReview(User $passenger, User $driver, int $rating, ?string $comment): Review
-    {
-        if ($passenger->role !== 'passenger') {
-            throw new \DomainException('Only passengers can leave reviews');
+        if (!$driver->hasRole('driver')) {
+            throw new \Exception('Этот пользователь не является водителем');
         }
 
-        $review = new Review([
-            'rating' => $rating,
-            'comment' => $comment,
-            'passenger_id' => $passenger->id,
-            'driver_id' => $driver->id,
+        return Review::create([
+            'user_id'   => $userId,
+            'driver_id' => $driverId,
+            'rating'    => $rating,
+            'comment'   => $comment,
         ]);
-
-        return $this->repository->save($review);
     }
 
-    public function getDriverReviews(User $driver): Collection
+    /**
+     * Получить список отзывов о водителе
+     */
+    public function getDriverReviews(int $driverId)
     {
-        return $this->repository->getDriverReviews($driver);
+        $driver = User::findOrFail($driverId);
+
+        if (!$driver->hasRole('driver')) {
+            throw new \Exception('Этот пользователь не является водителем');
+        }
+
+        return Review::with('user:id,name')
+            ->where('driver_id', $driverId)
+            ->latest()
+            ->get();
+    }
+
+    /**
+     * Посчитать средний рейтинг водителя
+     */
+    public function getDriverAverageRating(int $driverId): float
+    {
+        return (float) Review::where('driver_id', $driverId)->avg('rating');
     }
 }

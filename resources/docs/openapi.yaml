@@ -1,0 +1,229 @@
+openapi: 3.1.0
+info:
+  title: RideTech API
+  description: API для приложения совместных поездок
+  version: 1.0.0
+  contact:
+    email: admin@ridetech.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+  - url: https://ridetech-api.com/api/v1
+    description: Production server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Введите токен в формате: Bearer {token}"
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: ID пользователя
+        name:
+          type: string
+          example: "Иван Иванов"
+          description: Полное имя пользователя
+        email:
+          type: string
+          format: email
+          example: "ivan@example.com"
+          description: Email адрес
+        phone:
+          type: string
+          example: "+7900123456"
+          description: Номер телефона
+        role:
+          type: string
+          enum: [passenger, driver]
+          example: "passenger"
+          description: Роль пользователя
+        created_at:
+          type: string
+          format: datetime
+          description: Дата создания аккаунта
+        updated_at:
+          type: string
+          format: datetime
+          description: Дата последнего обновления
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          example: "1|abc123def456..."
+          description: Bearer токен для авторизации
+        message:
+          type: string
+          example: "Авторизация прошла успешно"
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Произошла ошибка"
+        errors:
+          type: object
+          description: "Детали ошибок валидации (если применимо)"
+
+  responses:
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "Unauthenticated"
+
+    Forbidden:
+      description: Доступ запрещен
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "Access denied"
+
+    ValidationError:
+      description: Ошибка валидации
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: "The given data was invalid."
+            errors:
+              email: ["Поле email обязательно для заполнения"]
+
+paths:
+  /register:
+    post:
+      summary: Регистрация нового пользователя
+      description: Создает новый аккаунт пользователя в системе
+      tags:
+        - Аутентификация
+      requestBody:
+        required: true
+        description: Данные для регистрации
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - phone
+                - role
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 255
+                  example: "Иван Иванов"
+                  description: Полное имя пользователя
+                email:
+                  type: string
+                  format: email
+                  example: "ivan@example.com"
+                  description: Уникальный email адрес
+                password:
+                  type: string
+                  minLength: 8
+                  example: "password123"
+                  description: Пароль (минимум 8 символов)
+                phone:
+                  type: string
+                  example: "+7900123456"
+                  description: Номер телефона
+                role:
+                  type: string
+                  enum: [passenger, driver]
+                  example: "passenger"
+                  description: Роль пользователя в системе
+      responses:
+        '201':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /login:
+    post:
+      summary: Авторизация пользователя
+      description: Вход в систему с получением токена доступа
+      tags:
+        - Аутентификация
+      requestBody:
+        required: true
+        description: Учетные данные для входа
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "ivan@example.com"
+                password:
+                  type: string
+                  example: "password123"
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Неверные учетные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "Неверные данные для входа"
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /logout:
+    post:
+      summary: Выход из системы
+      description: Отзыв токена доступа
+      tags:
+        - Аутентификация
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Успешный выход
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Вы успешно вышли из системы"
+        '401':
+          $ref: '#/components/responses/Unauthorized'

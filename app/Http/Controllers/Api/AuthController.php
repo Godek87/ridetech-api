@@ -27,7 +27,31 @@ final class AuthController extends Controller
         $this->authService = $authService;
         $this->middleware('auth:sanctum')->only(['logout']);
     }
-
+ /**
+     * @OA\Post(
+     *     path="/register",
+     *     summary="Регистрация пользователя",
+     *     tags={"Аутентификация"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","email","password","phone","role"},
+     *             @OA\Property(property="name", type="string", example="Иван Иванов"),
+     *             @OA\Property(property="email", type="string", example="ivan@example.com"),
+     *             @OA\Property(property="password", type="string", example="password123"),
+     *             @OA\Property(property="phone", type="string", example="+7900123456"),
+     *             @OA\Property(property="role", type="string", example="passenger")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Успешная регистрация",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     )
+     * )
+     */
  public function register(RegisterRequest $request): JsonResponse
 {
     $data = $request->validated();

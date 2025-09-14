@@ -1,10 +1,11 @@
 <?php
 
+
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Domain\User\Entities\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 class UserFactory extends Factory
 {
@@ -15,9 +16,11 @@ class UserFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
+            'email_verified_at' => now(),
+            'password' => Hash::make('password'),
             'phone' => $this->faker->phoneNumber(),
-            'role' => 'passenger', // или 'driver'
-            'password' => bcrypt('password123'), // стандартный пароль
+            'role' => 'passenger',
+            'remember_token' => \Illuminate\Support\Str::random(10),
         ];
     }
 }

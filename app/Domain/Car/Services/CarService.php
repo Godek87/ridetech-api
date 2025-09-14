@@ -1,58 +1,34 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Domain\Car\Services;
 
 use App\Domain\Car\Entities\Car;
-use App\Domain\Car\Repositories\CarRepositoryInterface;
-use App\Domain\User\Entities\User;
-use Illuminate\Support\Collection;
+use App\Domain\Car\ValueObjects\CarMake;
+use App\Domain\Car\ValueObjects\CarModel;
+use App\Domain\Car\ValueObjects\CarPlate;
+use Illuminate\Support\Facades\Auth;
 
 class CarService
 {
-    private CarRepositoryInterface $repository;
-
-    public function __construct(CarRepositoryInterface $repository)
+    public function create(CarMake $make, CarModel $model, CarPlate $plate): Car
     {
-        $this->repository = $repository;
-    }
-
-    public function createCar(User $driver, string $make, string $model, string $licensePlate): Car
-    {
-        if ($driver->role !== 'driver') {
-            throw new \DomainException('Only drivers can add cars');
-        }
-
-        $car = new Car([
-            'make' => $make,
-            'model' => $model,
-            'license_plate' => $licensePlate,
-            'driver_id' => $driver->id,
+        return Car::create([
+            'user_id' => Auth::id(),
+            'make' => $make->value,
+            'model' => $model->value,
+            'plate_number' => $plate->value,
         ]);
-
-        return $this->repository->save($car);
     }
 
-    public function getDriverCars(User $driver): Collection
+    public function list(): \Illuminate\Database\Eloquent\Collection
     {
-        return $this->repository->getDriverCars($driver);
+        return Car::where('user_id', Auth::id())->get();
     }
 
-    public function updateCar(Car $car, User $driver, array $data): Car
+    public function delete(int $id): bool
     {
-        if ($car->driver_id !== $driver->id || !$car->canBeUpdated()) {
-            throw new \DomainException('Cannot update this car');
-        }
-
-        $car->update($data);
-        return $this->repository->save($car);
-    }
-
-    public function deleteCar(Car $car, User $driver): void
-    {
-        if ($car->driver_id !== $driver->id) {
-            throw new \DomainException('Unauthorized');
-        }
-
-        $this->repository->delete($car);
+        $car = Car::where('user_id', Auth::id())->findOrFail($id);
+        return $car->delete();
     }
 }

@@ -1,29 +1,28 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Domain\Car\Entities;
-
-use App\Domain\User\Entities\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory; 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 
 class Car extends Model
 {
+      use HasFactory;
+
+    protected static function newFactory()
+    {
+        return \Database\Factories\CarFactory::new();
+    }
     protected $fillable = [
+        'user_id',
         'make',
         'model',
-        'license_plate',
-        'driver_id',
+        'plate_number',
     ];
 
-    public function driver(): BelongsTo
+    public function driver()
     {
-        return $this->belongsTo(User::class, 'driver_id');
-    }
-
-    // Бизнес-логика DDD
-    public function canBeUpdated(): bool
-    {
-        // Можно добавить логику, если нужно (например, если машина использовалась в поездках)
-        return true;
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

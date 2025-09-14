@@ -11,6 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Database\Factories\UserFactory;
+
 /**
  * Модель User (Eloquent) — доменная сущность пользователя.
  *
@@ -22,9 +23,13 @@ use Database\Factories\UserFactory;
 class User extends Authenticatable
 
 {
-     use HasFactory;
+    use HasFactory;
     use HasApiTokens;
 
+    protected static function newFactory()
+{
+    return \Database\Factories\UserFactory::new();
+}
 
     protected  $fillable = [
         'name', 'email', 'phone', 'password', 'role',
@@ -107,6 +112,8 @@ class User extends Authenticatable
             'role' => $role,
         ]);
     }
+
+
 
     /**
      * Возвращает true, если пользователь имеет роль "passenger".

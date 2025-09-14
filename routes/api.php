@@ -11,32 +11,49 @@ use App\Http\Controllers\Api\ReviewController;
 // Все маршруты под префиксом /api/v1
 Route::prefix('v1')->name('api.v1.')->group(function () {
     // Public
-    Route::post('register', [AuthController::class, 'register'])->name('auth.register')->middleware('throttle:5,1');
-    Route::post('login', [AuthController::class, 'login'])->name('auth.login')->middleware('throttle:10,1');
+    Route::post('register', [AuthController::class, 'register'])->name('auth.register')->middleware('throttle:100,1');
+    Route::post('login', [AuthController::class, 'login'])->name('auth.login')->middleware('throttle:100,1');
     Route::get('trips/available', [TripController::class, 'available']);
 
     // Protected (Sanctum)
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
 
-        Route::post('trips', [TripController::class, 'store'])->middleware('role:passenger');
-        Route::get('trips', [TripController::class, 'index']);
-        Route::get('trips/{id}', [TripController::class, 'show']);
-        Route::put('trips/{id}', [TripController::class, 'update'])->middleware('role:passenger');
-        Route::delete('trips/{id}', [TripController::class, 'destroy'])->middleware('role:passenger');
-        Route::post('trips/{id}/accept', [TripController::class, 'accept'])->middleware('role:driver');
-        Route::post('trips/{id}/reject', [TripController::class, 'reject'])->middleware('role:driver');
-        Route::post('trips/{id}/complete', [TripController::class, 'complete'])->middleware('role:driver');
-        Route::post('trips/{id}/test-broadcast', [TripController::class, 'testBroadcast']);
+         /**
+         * Управление поездками
+         */
+        Route::prefix('trips')->group(function () {
+            Route::post('/', [TripController::class, 'store'])->middleware('role:passenger');
+            Route::get('/', [TripController::class, 'index']);
+            Route::get('{id}', [TripController::class, 'show']);
+            Route::put('{id}', [TripController::class, 'update'])->middleware('role:passenger');
+            Route::delete('{id}', [TripController::class, 'destroy'])->middleware('role:passenger');
 
-        // Cars (driver only)
-        Route::middleware('role:driver')->group(function () {
-            Route::post('cars', [CarController::class, 'store']);
-            Route::get('cars', [CarController::class, 'index']);
-            Route::delete('cars/{id}', [CarController::class, 'destroy']);
+            // действия водителя
+            Route::post('{id}/accept', [TripController::class, 'accept'])->middleware('role:driver');
+            Route::post('{id}/reject', [TripController::class, 'reject'])->middleware('role:driver');
+            Route::post('{id}/complete', [TripController::class, 'complete'])->middleware('role:driver');
+
+            // тестовый endpoint
+         Route::middleware(['auth:sanctum'])->post('trips/{id}/test-broadcast', [TripController::class, 'testBroadcast']);
         });
 
-        // Reviews
-        Route::get('reviews/{driverId}', [ReviewController::class, 'index']);
+         /**
+         * Машины (только для водителей)
+         */
+        Route::middleware(['auth:sanctum', 'role:driver'])->post('cars', [CarController::class, 'store']);
+        Route::middleware('role:driver')->prefix('cars')->group(function () {
+            Route::post('/', [CarController::class, 'store']);
+            Route::get('/', [CarController::class, 'index']);
+            Route::delete('{id}', [CarController::class, 'destroy']);
+        });
+
+        /**
+         * Отзывы
+         */
+        Route::prefix('reviews')->group(function () {
+            Route::post('{driverId}', [ReviewController::class, 'store'])->middleware('role:passenger');
+            Route::get('{driverId}', [ReviewController::class, 'index']);
+        });
     });
 });

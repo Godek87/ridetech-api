@@ -5,15 +5,21 @@ namespace App\Domain\Review\Entities;
 use App\Domain\User\Entities\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Review extends Model
 {
-    protected $fillable = [
-        'rating',
-        'comment',
-        'driver_id',
-        'passenger_id',
-    ];
+      use HasFactory;
+
+    protected static function newFactory()
+    {
+        return \Database\Factories\ReviewFactory::new();
+    }
+   protected $fillable = [
+    'user_id',
+    'driver_id',
+    'rating',
+    'comment'
+];
 
     public function driver(): BelongsTo
     {

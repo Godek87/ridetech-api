@@ -1,0 +1,16 @@
+   <!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="refresh" content="0;url='http://ridetech-api.test'" />
+
+        <title>Redirecting to http://ridetech-api.test</title>
+    </head>
+    <body>
+        Redirecting to <a href="http://ridetech-api.test">http://ridetech-api.test</a>.
+    </body>
+</html>--_curl_--
+>   "email": "testuser4@example.com"
+--_curl_--
+>   "password": "password123"
+> 

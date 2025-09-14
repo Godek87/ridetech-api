@@ -2,17 +2,20 @@
 
 return [
     'default' => 'default',
+
     'documentations' => [
         'default' => [
             'api' => [
-                'title' => 'L5 Swagger UI',
-            ],
-
+            'title' => 'RideTech API',
+            'description' => 'API для приложения совместных поездок',
+            'version' => '1.0.0',
+        ],
             'routes' => [
                 /*
                  * Route for accessing api documentation interface
                  */
                 'api' => 'api/documentation',
+                'docs' => 'docs',
             ],
             'paths' => [
                 /*

@@ -24,7 +24,7 @@ final class AuthService
     'email' => $email->getValue(),
     'phone' => $phone->getValue(),
     'password' => $password->getHashedValue(),
-    'role' => $role,
+     'role' => $request->role ?? 'passenger', // по умолчанию пассажир
     ]);
 
         $token = $user->createToken('api-token')->plainTextToken;
